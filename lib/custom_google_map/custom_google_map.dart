@@ -1,5 +1,6 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 
 import '../models/place_model.dart';
 class CustomGoogleMap extends StatefulWidget {
@@ -11,11 +12,14 @@ class CustomGoogleMap extends StatefulWidget {
 
 class _CustomGoogleMapState extends State<CustomGoogleMap> {
   @override
+  late Location location;
   late CameraPosition initialCameraPostion;
-  late GoogleMapController googleMapController;
+   GoogleMapController? googleMapController;
 
   void initState() {
     super.initState();
+     location =Location();
+    updateMyLocation();
     initMarkers();
     initPolyline();
     initPolygons();
@@ -27,7 +31,7 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
 
   @override
   void dispose() {
-    googleMapController.dispose();
+    googleMapController!.dispose();
     super.dispose();
   }
 
@@ -45,11 +49,12 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
       onMapCreated: (controller) {
         googleMapController = controller;
         initMapStyle();
+
       },
       initialCameraPosition: initialCameraPostion,
-      cameraTargetBounds: CameraTargetBounds(LatLngBounds(
-          southwest: const LatLng(31.080569617326795, 29.763491041232577),
-          northeast: const LatLng(31.30846738149212, 30.169298507189573))),
+      // cameraTargetBounds: CameraTargetBounds(LatLngBounds(
+      //     southwest: const LatLng(31.080569617326795, 29.763491041232577),
+      //     northeast: const LatLng(31.30846738149212, 30.169298507189573))),
 
 
     );
@@ -58,7 +63,7 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
   void initMapStyle() async {
     var nightMapStyle = await DefaultAssetBundle.of(context)
         .loadString('assets/sunney_map_style.json');
-    googleMapController.setMapStyle(nightMapStyle);
+    googleMapController!.setMapStyle(nightMapStyle);
   }
 
   void initMarkers() {
@@ -102,6 +107,57 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
         fillColor: Colors.white.withOpacity(.5));
     circles.add(myLocation);
   }
+
+  Future <void> checkAndRequestServiceLocation()async {
+    var isServiceEnabled =await location.serviceEnabled();
+    if(!isServiceEnabled){
+      isServiceEnabled= await  location.requestService();
+    } if(!isServiceEnabled){
+    //   todo: show error bar
+    }
+  }
+  Future<bool> checkAndRequestPermissionLocation()async{
+
+   var permissionStatus=await location.hasPermission();
+   if(permissionStatus== PermissionStatus.deniedForever){
+     return false;
+   }
+   if(permissionStatus == PermissionStatus.denied){
+     permissionStatus= await location.requestPermission();
+   }if(permissionStatus != PermissionStatus.granted){
+  //    todo: show error bar
+  }
+   return true;
+  }
+  void getLocationData(){
+    location.onLocationChanged.listen(
+            (locationData){
+      var cameraPosition= CameraPosition(
+          zoom: 8,
+          target:LatLng(locationData.latitude!, locationData.longitude!) );
+      var myLocationMarker= Marker(
+          position: LatLng(locationData.latitude!, locationData.longitude!),
+          markerId: MarkerId('2'));
+      markers.add(myLocationMarker);
+      setState(() {
+
+      });
+      googleMapController?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    });
+
+  }
+  void updateMyLocation()async{
+  await  checkAndRequestServiceLocation();
+  await  checkAndRequestPermissionLocation();
+  var hasPermission=await checkAndRequestPermissionLocation();
+  if(hasPermission){
+    getLocationData();
+  }else{
+    
+  }
+
+  }
+
 }
 
 
