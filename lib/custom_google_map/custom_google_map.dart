@@ -18,6 +18,7 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
     super.initState();
     initMarkers();
     initPolyline();
+    initPolygons();
     initialCameraPostion = const CameraPosition(
         zoom: 16,
         target: LatLng(31.236096292977177, 29.948132578022626));
@@ -31,9 +32,11 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
 
   Set<Marker> markers = {};
   Set<Polyline> polylines = {};
+  Set<Polygon> polygons = {};
 
   Widget build(BuildContext context) {
     return GoogleMap(
+      polygons:polygons ,
       polylines: polylines,
       markers: markers,
       onMapCreated: (controller) {
@@ -76,6 +79,14 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
       LatLng(31.236593765802407, 29.95060214916585),
     ]);
     polylines.add(polyline);
+  }
+  void initPolygons() {
+    Polygon polygon = Polygon(polygonId: PolygonId('1'), points: [
+      LatLng(31.226208780435154, 29.960687255469185),
+      LatLng(31.225364720875195, 29.954593276341214),
+      LatLng(31.231750027730584, 29.955365752568703),
+    ]);
+    polygons.add(polygon);
   }
 
 }
