@@ -19,7 +19,15 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
 
   }
   Widget build(BuildContext context) {
-    return GoogleMap(initialCameraPosition:initialCameraPostion);
+    return GoogleMap(
+      initialCameraPosition:initialCameraPostion,
+      cameraTargetBounds: CameraTargetBounds(LatLngBounds(
+          southwest: const LatLng(31.080569617326795, 29.763491041232577),
+          northeast: const LatLng(31.30846738149212, 30.169298507189573))),
+
+
+
+    );
   }
 }
 
