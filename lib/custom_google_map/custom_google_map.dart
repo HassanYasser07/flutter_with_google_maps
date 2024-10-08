@@ -130,6 +130,9 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
    return true;
   }
   void getLocationData(){
+    location.changeSettings(
+      distanceFilter: 2
+    );
     location.onLocationChanged.listen(
             (locationData){
       var cameraPosition= CameraPosition(
