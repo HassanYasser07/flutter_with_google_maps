@@ -1,8 +1,9 @@
+import 'package:flutter_with_google_maps/utils/location_services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:location/location.dart';
 
 import '../models/place_model.dart';
+import 'package:location_platform_interface/location_platform_interface.dart';
 class CustomGoogleMap extends StatefulWidget {
   const CustomGoogleMap({super.key});
 
@@ -12,13 +13,13 @@ class CustomGoogleMap extends StatefulWidget {
 
 class _CustomGoogleMapState extends State<CustomGoogleMap> {
   @override
-  late Location location;
+  late LocationServices locationServices;
   late CameraPosition initialCameraPostion;
    GoogleMapController? googleMapController;
 
   void initState() {
     super.initState();
-     location =Location();
+     locationServices =LocationServices();
     updateMyLocation();
     initMarkers();
     initPolyline();
@@ -108,57 +109,57 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
     circles.add(myLocation);
   }
 
-  Future <void> checkAndRequestServiceLocation()async {
-    var isServiceEnabled =await location.serviceEnabled();
-    if(!isServiceEnabled){
-      isServiceEnabled= await  location.requestService();
-    } if(!isServiceEnabled){
-    //   todo: show error bar
-    }
-  }
-  Future<bool> checkAndRequestPermissionLocation()async{
 
-   var permissionStatus=await location.hasPermission();
-   if(permissionStatus== PermissionStatus.deniedForever){
-     return false;
-   }
-   if(permissionStatus == PermissionStatus.denied){
-     permissionStatus= await location.requestPermission();
-   }if(permissionStatus != PermissionStatus.granted){
-  //    todo: show error bar
-  }
-   return true;
-  }
-  void getLocationData(){
-    location.changeSettings(
-      distanceFilter: 2
-    );
-    location.onLocationChanged.listen(
-            (locationData){
-      var cameraPosition= CameraPosition(
-          zoom: 8,
-          target:LatLng(locationData.latitude!, locationData.longitude!) );
-      var myLocationMarker= Marker(
-          position: LatLng(locationData.latitude!, locationData.longitude!),
-          markerId: MarkerId('2'));
-      markers.add(myLocationMarker);
-      setState(() {
 
-      });
-      googleMapController?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
-    });
-
-  }
+  // void getLocationData(){
+  //   location.changeSettings(
+  //     distanceFilter: 2
+  //   );
+  //   location.onLocationChanged.listen(
+  //           (locationData){
+  //     var cameraPosition= CameraPosition(
+  //         zoom: 8,
+  //         target:LatLng(locationData.latitude!, locationData.longitude!) );
+  //     var myLocationMarker= Marker(
+  //         position: LatLng(locationData.latitude!, locationData.longitude!),
+  //         markerId: MarkerId('2'));
+  //     markers.add(myLocationMarker);
+  //     setState(() {
+  //
+  //     });
+  //     googleMapController?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+  //   });
+  //
+  // }
   void updateMyLocation()async{
-  await  checkAndRequestServiceLocation();
-  await  checkAndRequestPermissionLocation();
-  var hasPermission=await checkAndRequestPermissionLocation();
-  if(hasPermission){
-    getLocationData();
+    locationServices.checkAndRequestServiceLocation();
+  var hasPermission=await locationServices.checkAndRequestPermissionLocation();
+  if( hasPermission){
+    locationServices.getRealTimeLocationData((locationData){
+      setMyCameraPosition(locationData);
+    });
   }else{
     
   }
 
+  }
+
+  void setMyCameraPosition(LocationData locationData) {
+    var cameraPosition= CameraPosition(
+        zoom: 8,
+        target:LatLng(locationData.latitude!, locationData.longitude!) );
+    setMyLocationMarkSpace(locationData);
+    googleMapController?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+  }
+
+  void setMyLocationMarkSpace(LocationData locationData) {
+    var myLocationMarker= Marker(
+        position: LatLng(locationData.latitude!, locationData.longitude!),
+        markerId: MarkerId('2'));
+    markers.add(myLocationMarker);
+    setState(() {
+
+    });
   }
 
 }
