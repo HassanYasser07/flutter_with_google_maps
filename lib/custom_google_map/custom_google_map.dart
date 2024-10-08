@@ -146,10 +146,9 @@ class _CustomGoogleMapState extends State<CustomGoogleMap> {
 
   void setMyCameraPosition(LocationData locationData) {
     var cameraPosition= CameraPosition(
-        zoom: 8,
         target:LatLng(locationData.latitude!, locationData.longitude!) );
     setMyLocationMarkSpace(locationData);
-    googleMapController?.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    googleMapController?.animateCamera(CameraUpdate.newLatLng(LatLng(locationData.latitude!, locationData.longitude!)));
   }
 
   void setMyLocationMarkSpace(LocationData locationData) {
